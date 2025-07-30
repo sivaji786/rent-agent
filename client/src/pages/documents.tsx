@@ -168,7 +168,7 @@ export default function Documents() {
                               {document.fileSize && (
                                 <span>Size: {formatFileSize(document.fileSize)}</span>
                               )}
-                              <span>By: {document.uploadedBy.slice(-8)}</span>
+                              <span>By: {document.uploadedBy?.slice(-8) || 'Unknown'}</span>
                             </div>
                           </div>
                         </div>

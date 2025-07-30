@@ -6,7 +6,9 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { insertDocumentSchema, type InsertDocument } from "@shared/schema";
+import { ObjectUploader } from "@/components/ObjectUploader";
 import { z } from "zod";
+import type { UploadResult } from "@uppy/core";
 import {
   Dialog,
   DialogContent,
@@ -33,8 +35,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Upload } from "lucide-react";
 
-const documentFormSchema = insertDocumentSchema.extend({
-  file: z.any().optional(),
+const documentFormSchema = z.object({
+  name: z.string().min(1, "Document name is required"),
+  propertyId: z.string().optional(),
+  unitId: z.string().optional(),
+  leaseId: z.string().optional(),
 });
 
 type DocumentFormData = z.infer<typeof documentFormSchema>;
@@ -45,13 +50,28 @@ interface DocumentUploadFormProps {
 
 export default function DocumentUploadForm({ children }: DocumentUploadFormProps) {
   const [open, setOpen] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadedFileUrl, setUploadedFileUrl] = useState<string>("");
+  const [uploadedFileName, setUploadedFileName] = useState<string>("");
+  const [uploadedFileSize, setUploadedFileSize] = useState<number>(0);
+  const [uploadedFileType, setUploadedFileType] = useState<string>("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
   // Fetch properties for document association
   const { data: properties } = useQuery({
     queryKey: ["/api/properties"],
+    retry: false,
+  });
+
+  // Fetch units for document association
+  const { data: units } = useQuery({
+    queryKey: ["/api/units"],
+    retry: false,
+  });
+
+  // Fetch leases for document association
+  const { data: leases } = useQuery({
+    queryKey: ["/api/leases"],
     retry: false,
   });
 
@@ -65,17 +85,22 @@ export default function DocumentUploadForm({ children }: DocumentUploadFormProps
     },
   });
 
-  const uploadDocumentMutation = useMutation({
+  const saveDocumentMutation = useMutation({
     mutationFn: async (data: DocumentFormData) => {
-      // For now, simulate document upload without actual file storage
+      if (!uploadedFileUrl) {
+        throw new Error("No file uploaded");
+      }
+      
       const submitData = {
-        ...data,
-        fileName: selectedFile?.name || data.name,
-        fileSize: selectedFile?.size || 0,
-        fileType: selectedFile?.type || "application/octet-stream",
-        filePath: `/documents/${selectedFile?.name || data.name}`,
-        uploadedBy: "current-user", // This would be set by the backend
+        name: data.name,
+        fileUrl: uploadedFileUrl,
+        fileType: uploadedFileType,
+        fileSize: uploadedFileSize,
+        propertyId: data.propertyId === "none" ? undefined : data.propertyId,
+        unitId: data.unitId === "none" ? undefined : data.unitId,
+        leaseId: data.leaseId === "none" ? undefined : data.leaseId,
       };
+      
       const response = await apiRequest("POST", "/api/documents", submitData);
       return response.json();
     },
@@ -83,10 +108,13 @@ export default function DocumentUploadForm({ children }: DocumentUploadFormProps
       queryClient.invalidateQueries({ queryKey: ["/api/documents"] });
       toast({
         title: "Success",
-        description: "Document uploaded successfully",
+        description: "Document saved successfully",
       });
       setOpen(false);
-      setSelectedFile(null);
+      setUploadedFileUrl("");
+      setUploadedFileName("");
+      setUploadedFileSize(0);
+      setUploadedFileType("");
       form.reset();
     },
     onError: (error) => {
@@ -103,31 +131,55 @@ export default function DocumentUploadForm({ children }: DocumentUploadFormProps
       }
       toast({
         title: "Error",
-        description: "Failed to upload document",
+        description: "Failed to save document",
         variant: "destructive",
       });
     },
   });
 
   const onSubmit = (data: DocumentFormData) => {
-    if (!selectedFile && !data.name) {
+    if (!uploadedFileUrl) {
       toast({
         title: "Error",
-        description: "Please select a file or enter a document name",
+        description: "Please upload a file first",
         variant: "destructive",
       });
       return;
     }
-    uploadDocumentMutation.mutate(data);
+    saveDocumentMutation.mutate(data);
   };
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setSelectedFile(file);
+  const handleGetUploadParameters = async () => {
+    const response = await apiRequest("POST", "/api/objects/upload");
+    const data = await response.json();
+    return {
+      method: "PUT" as const,
+      url: data.uploadURL,
+    };
+  };
+
+  const handleUploadComplete = (result: UploadResult<Record<string, unknown>, Record<string, unknown>>) => {
+    if (result.successful && result.successful.length > 0) {
+      const file = result.successful[0];
+      const fileUrl = file.uploadURL || "";
+      const fileName = file.name || "";
+      const fileSize = file.size || 0;
+      const fileType = file.type || "";
+      
+      setUploadedFileUrl(fileUrl);
+      setUploadedFileName(fileName);
+      setUploadedFileSize(fileSize);
+      setUploadedFileType(fileType);
+      
+      // Auto-fill the document name if not already set
       if (!form.getValues("name")) {
-        form.setValue("name", file.name);
+        form.setValue("name", fileName);
       }
+      
+      toast({
+        title: "Success",
+        description: "File uploaded successfully. Please fill out the form and save.",
+      });
     }
   };
 
@@ -147,19 +199,27 @@ export default function DocumentUploadForm({ children }: DocumentUploadFormProps
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Select File</label>
-              <Input
-                type="file"
-                onChange={handleFileChange}
-                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.txt"
-                className="cursor-pointer"
-              />
-              {selectedFile && (
-                <div className="text-sm text-gray-600">
-                  Selected: {selectedFile.name} ({(selectedFile.size / 1024).toFixed(1)} KB)
-                </div>
-              )}
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Upload File</label>
+                <ObjectUploader
+                  maxNumberOfFiles={1}
+                  maxFileSize={50 * 1024 * 1024} // 50MB
+                  onGetUploadParameters={handleGetUploadParameters}
+                  onComplete={handleUploadComplete}
+                  buttonClassName="w-full"
+                >
+                  <div className="flex items-center justify-center space-x-2">
+                    <Upload className="h-4 w-4" />
+                    <span>Choose File to Upload</span>
+                  </div>
+                </ObjectUploader>
+                {uploadedFileName && (
+                  <div className="text-sm text-green-600 bg-green-50 p-2 rounded">
+                    ✓ Uploaded: {uploadedFileName} ({(uploadedFileSize / 1024).toFixed(1)} KB)
+                  </div>
+                )}
+              </div>
             </div>
 
             <FormField
@@ -189,7 +249,7 @@ export default function DocumentUploadForm({ children }: DocumentUploadFormProps
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="">No Property</SelectItem>
+                      <SelectItem value="none">No Property</SelectItem>
                       {properties?.map((property: any) => (
                         <SelectItem key={property.id} value={property.id}>
                           {property.name}
@@ -206,8 +266,8 @@ export default function DocumentUploadForm({ children }: DocumentUploadFormProps
               <Button type="button" variant="outline" onClick={() => setOpen(false)}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={uploadDocumentMutation.isPending}>
-                {uploadDocumentMutation.isPending ? "Uploading..." : "Upload Document"}
+              <Button type="submit" disabled={saveDocumentMutation.isPending}>
+                {saveDocumentMutation.isPending ? "Saving..." : "Save Document"}
               </Button>
             </div>
           </form>

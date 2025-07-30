@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
+import { ObjectStorageService } from "./objectStorage";
 import { 
   insertPropertySchema, 
   insertUnitSchema, 
@@ -372,10 +373,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json(newUser);
     } catch (error) {
       console.error("Error creating user:", error);
-      if (error.code === '23505') {
+      if ((error as any).code === '23505') {
         return res.status(400).json({ message: "A user with this email already exists" });
       }
       res.status(500).json({ message: "Failed to create user" });
+    }
+  });
+
+  // Object storage endpoints
+  app.post("/api/objects/upload", isAuthenticated, async (req, res) => {
+    try {
+      const objectStorageService = new ObjectStorageService();
+      const uploadURL = await objectStorageService.getObjectEntityUploadURL();
+      res.json({ uploadURL });
+    } catch (error) {
+      console.error("Error getting upload URL:", error);
+      res.status(500).json({ message: "Failed to get upload URL" });
     }
   });
 
@@ -393,16 +406,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/documents", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
+      const objectStorageService = new ObjectStorageService();
       
-      if (user?.role !== "admin" && user?.role !== "manager") {
-        return res.status(403).json({ message: "Unauthorized" });
-      }
-
       const documentData = {
-        ...req.body,
+        name: req.body.name,
+        fileUrl: req.body.fileUrl,
+        fileType: req.body.fileType,
+        fileSize: req.body.fileSize,
+        propertyId: req.body.propertyId,
+        unitId: req.body.unitId,
+        leaseId: req.body.leaseId,
         uploadedBy: userId,
       };
+      
       const document = await storage.createDocument(documentData);
       res.status(201).json(document);
     } catch (error) {
