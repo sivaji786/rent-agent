@@ -85,9 +85,17 @@ export default function TenantForm({ children }: TenantFormProps) {
         }, 500);
         return;
       }
+      
+      let errorMessage = "Failed to create tenant";
+      if (error.message.includes("400")) {
+        errorMessage = "A user with this email already exists";
+      } else if (error.message.includes("email already exists")) {
+        errorMessage = "A user with this email already exists";
+      }
+      
       toast({
         title: "Error",
-        description: "Failed to create tenant",
+        description: errorMessage,
         variant: "destructive",
       });
     },

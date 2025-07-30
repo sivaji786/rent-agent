@@ -356,10 +356,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const userData = insertUserSchema.parse(req.body);
+      
+      // Check if user with this email already exists
+      const existingUser = await storage.getUserByEmail(userData.email || "");
+      if (existingUser) {
+        return res.status(400).json({ message: "A user with this email already exists" });
+      }
+      
       const newUser = await storage.createUser(userData);
       res.status(201).json(newUser);
     } catch (error) {
       console.error("Error creating user:", error);
+      if (error.code === '23505') {
+        return res.status(400).json({ message: "A user with this email already exists" });
+      }
       res.status(500).json({ message: "Failed to create user" });
     }
   });
