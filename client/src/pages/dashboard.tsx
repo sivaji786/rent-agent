@@ -11,10 +11,13 @@ import UrgentTasks from "@/components/dashboard/urgent-tasks";
 import RecentMessages from "@/components/dashboard/recent-messages";
 import AIInsights from "@/components/dashboard/ai-insights";
 import { isUnauthorizedError } from "@/lib/authUtils";
+import { useTour } from "@/hooks/useTour";
+import ApplicationTour from "@/components/tour/application-tour";
 
 export default function Dashboard() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
+  const { showTour, closeTour } = useTour();
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -64,6 +67,11 @@ export default function Dashboard() {
           </div>
         </main>
       </div>
+      
+      <ApplicationTour 
+        isOpen={showTour}
+        onClose={closeTour}
+      />
     </div>
   );
 }

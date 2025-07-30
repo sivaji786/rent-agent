@@ -130,3 +130,13 @@ The system includes comprehensive data models for:
 - Error handling with graceful fallbacks and user feedback
 
 The application follows modern full-stack patterns with clear separation of concerns, type safety throughout, and scalable architecture suitable for property management workflows.
+
+## Recent Changes
+
+### January 30, 2025
+- **Application Tour System**: Added comprehensive onboarding tour for new users
+  - Interactive step-by-step guide through all major features
+  - First-visit detection and automatic tour launch
+  - Manual tour activation via help button in header
+  - Progress tracking and tour completion storage
+  - Covers: Dashboard, Properties, Tenants, Maintenance, Financials, Documents, Communication, Reports, AI Assistant, and Notifications

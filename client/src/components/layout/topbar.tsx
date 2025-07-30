@@ -1,13 +1,16 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
-import { Bell, Bot, Moon, Sun } from "lucide-react";
+import { Bell, Bot, Moon, Sun, HelpCircle } from "lucide-react";
 import { useState } from "react";
 import AIAssistantModal from "@/components/ai-assistant/ai-assistant-modal";
+import { useTour } from "@/hooks/useTour";
+import ApplicationTour from "@/components/tour/application-tour";
 
 export default function TopBar() {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [showAIAssistant, setShowAIAssistant] = useState(false);
+  const { showTour, startTour, closeTour } = useTour();
 
   const { data: stats } = useQuery({
     queryKey: ["/api/dashboard/stats"],
@@ -33,6 +36,17 @@ export default function TopBar() {
           </p>
         </div>
         <div className="flex items-center space-x-4">
+          {/* Help Tour Button */}
+          <Button 
+            onClick={() => startTour()}
+            variant="ghost"
+            size="icon"
+            className="text-gray-400 hover:text-gray-600"
+            title="Take a tour"
+          >
+            <HelpCircle className="h-5 w-5" />
+          </Button>
+
           {/* AI Assistant Button */}
           <Button 
             onClick={handleAIAssistant}
@@ -72,6 +86,11 @@ export default function TopBar() {
       <AIAssistantModal 
         open={showAIAssistant} 
         onOpenChange={setShowAIAssistant} 
+      />
+      
+      <ApplicationTour 
+        isOpen={showTour}
+        onClose={closeTour}
       />
     </header>
   );
