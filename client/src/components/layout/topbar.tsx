@@ -3,9 +3,11 @@ import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
 import { Bell, Bot, Moon, Sun } from "lucide-react";
 import { useState } from "react";
+import AIAssistantModal from "@/components/ai-assistant/ai-assistant-modal";
 
 export default function TopBar() {
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [showAIAssistant, setShowAIAssistant] = useState(false);
 
   const { data: stats } = useQuery({
     queryKey: ["/api/dashboard/stats"],
@@ -15,6 +17,10 @@ export default function TopBar() {
   const toggleTheme = () => {
     setIsDarkMode(!isDarkMode);
     document.documentElement.classList.toggle("dark");
+  };
+
+  const handleAIAssistant = () => {
+    setShowAIAssistant(true);
   };
 
   return (
@@ -28,7 +34,10 @@ export default function TopBar() {
         </div>
         <div className="flex items-center space-x-4">
           {/* AI Assistant Button */}
-          <Button className="bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 transition-colors">
+          <Button 
+            onClick={handleAIAssistant}
+            className="bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 transition-colors"
+          >
             <Bot className="h-4 w-4 mr-2" />
             AI Assistant
           </Button>
@@ -37,12 +46,12 @@ export default function TopBar() {
           <div className="relative">
             <Button variant="ghost" size="icon" className="relative">
               <Bell className="h-5 w-5" />
-              {(stats?.unreadMessages || 0) > 0 && (
+              {((stats as any)?.unreadMessages || 0) > 0 && (
                 <Badge 
                   variant="destructive" 
                   className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
                 >
-                  {stats?.unreadMessages}
+                  {(stats as any)?.unreadMessages}
                 </Badge>
               )}
             </Button>
@@ -59,6 +68,11 @@ export default function TopBar() {
           </Button>
         </div>
       </div>
+      
+      <AIAssistantModal 
+        open={showAIAssistant} 
+        onOpenChange={setShowAIAssistant} 
+      />
     </header>
   );
 }
