@@ -1,5 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { LoginButton } from "@/components/auth/login-button";
+import { SignupButton } from "@/components/auth/signup-button";
 
 export default function Landing() {
   return (
@@ -22,12 +24,22 @@ export default function Landing() {
             Streamline your property management with our comprehensive platform. 
             Manage properties, tenants, maintenance, and finances all in one place.
           </p>
-          <Button 
-            onClick={() => window.location.href = '/api/login'}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 text-lg rounded-lg"
-          >
-            Get Started
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <LoginButton size="lg" className="px-8 py-4 text-lg" />
+            <SignupButton size="lg" className="px-8 py-4 text-lg" />
+          </div>
+          <div className="mt-4">
+            <Button 
+              variant="ghost" 
+              size="lg" 
+              className="px-8 py-4 text-lg text-gray-600 hover:text-gray-800"
+              onClick={() => {
+                document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' });
+              }}
+            >
+              Learn More
+            </Button>
+          </div>
         </div>
 
         <div className="grid md:grid-cols-3 gap-8 mb-16">
