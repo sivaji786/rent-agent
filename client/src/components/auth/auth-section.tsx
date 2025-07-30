@@ -7,6 +7,7 @@ import { GoogleLoginButton } from "@/components/auth/google-login-button";
 import { MicrosoftLoginButton } from "@/components/auth/microsoft-login-button";
 import { LoginForm } from "@/components/auth/login-form";
 import { SignupForm } from "@/components/auth/signup-form";
+import { ForgotPasswordForm } from "@/components/auth/forgot-password-form";
 
 interface AuthSectionProps {
   title?: string;
@@ -25,13 +26,14 @@ export function AuthSection({
   showMicrosoft = true,
   showManual = true
 }: AuthSectionProps) {
-  const [mode, setMode] = useState<"providers" | "login" | "signup">("providers");
+  const [mode, setMode] = useState<"providers" | "login" | "signup" | "forgot-password">("providers");
 
   if (mode === "login") {
     return (
       <div className="space-y-4">
         <LoginForm 
           onSwitchToSignup={() => setMode("signup")}
+          onForgotPassword={() => setMode("forgot-password")}
         />
         <div className="text-center">
           <Button
@@ -61,6 +63,16 @@ export function AuthSection({
             ← Back to sign-in options
           </Button>
         </div>
+      </div>
+    );
+  }
+
+  if (mode === "forgot-password") {
+    return (
+      <div className="space-y-4">
+        <ForgotPasswordForm 
+          onBack={() => setMode("login")}
+        />
       </div>
     );
   }

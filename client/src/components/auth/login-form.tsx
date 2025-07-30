@@ -11,9 +11,10 @@ import { Eye, EyeOff, LogIn } from "lucide-react";
 interface LoginFormProps {
   onSuccess?: () => void;
   onSwitchToSignup?: () => void;
+  onForgotPassword?: () => void;
 }
 
-export function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
+export function LoginForm({ onSuccess, onSwitchToSignup, onForgotPassword }: LoginFormProps) {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -117,6 +118,17 @@ export function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
           >
             {loginMutation.isPending ? "Signing In..." : "Sign In"}
           </Button>
+          
+          <div className="text-center text-sm">
+            <Button
+              type="button"
+              variant="link"
+              className="p-0 h-auto font-normal text-muted-foreground"
+              onClick={onForgotPassword}
+            >
+              Forgot your password?
+            </Button>
+          </div>
           
           {onSwitchToSignup && (
             <div className="text-center text-sm">

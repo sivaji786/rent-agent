@@ -15,6 +15,7 @@ import Communication from "@/pages/communication";
 import Reports from "@/pages/reports";
 import Documents from "@/pages/documents";
 import Settings from "@/pages/settings";
+import ResetPassword from "@/pages/reset-password";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -22,7 +23,10 @@ function Router() {
   return (
     <Switch>
       {isLoading || !isAuthenticated ? (
-        <Route path="/" component={Landing} />
+        <>
+          <Route path="/" component={Landing} />
+          <Route path="/reset-password" component={ResetPassword} />
+        </>
       ) : (
         <>
           <Route path="/" component={Dashboard} />

@@ -34,6 +34,9 @@ export interface IStorage {
   // User operations
   getUser(id: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
+  getUserByResetToken(token: string): Promise<User | undefined>;
+  updateUserPassword(userId: string, passwordHash: string): Promise<User>;
+  setResetToken(userId: string, resetToken: string, expiry: Date): Promise<User>;
   upsertUser(user: UpsertUser): Promise<User>;
   createUser(user: any): Promise<User>;
   getUsersByRole(role: string): Promise<User[]>;
@@ -107,6 +110,39 @@ export class DatabaseStorage implements IStorage {
   async getUserByEmail(email: string): Promise<User | undefined> {
     if (!email) return undefined;
     const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user;
+  }
+
+  async getUserByResetToken(token: string): Promise<User | undefined> {
+    if (!token) return undefined;
+    const [user] = await db.select().from(users).where(eq(users.resetToken, token));
+    return user;
+  }
+
+  async updateUserPassword(userId: string, passwordHash: string): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({ 
+        passwordHash,
+        resetToken: null,
+        resetTokenExpiry: null,
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    return user;
+  }
+
+  async setResetToken(userId: string, resetToken: string, expiry: Date): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({ 
+        resetToken,
+        resetTokenExpiry: expiry,
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, userId))
+      .returning();
     return user;
   }
 

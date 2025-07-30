@@ -55,6 +55,8 @@ export const users = pgTable("users", {
   phone: varchar("phone"),
   passwordHash: varchar("password_hash"), // For manual signups
   authProvider: varchar("auth_provider").default("manual"), // 'manual', 'replit', 'google', 'microsoft'
+  resetToken: varchar("reset_token"), // For password reset
+  resetTokenExpiry: timestamp("reset_token_expiry"), // Token expiration
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

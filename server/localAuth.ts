@@ -1,8 +1,10 @@
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 import type { Express } from "express";
 import { storage } from "./storage";
+import { emailService } from "./emailService";
 import { z } from "zod";
 
 const signupSchema = z.object({
@@ -15,6 +17,15 @@ const signupSchema = z.object({
 const loginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(1),
+});
+
+const forgotPasswordSchema = z.object({
+  email: z.string().email(),
+});
+
+const resetPasswordSchema = z.object({
+  token: z.string().min(1),
+  password: z.string().min(8),
 });
 
 export async function setupLocalAuth(app: Express) {
@@ -148,5 +159,99 @@ export async function setupLocalAuth(app: Express) {
         });
       });
     })(req, res, next);
+  });
+
+  // Forgot password route
+  app.post("/api/auth/forgot-password", async (req, res) => {
+    try {
+      const { email } = forgotPasswordSchema.parse(req.body);
+
+      // Check if user exists
+      const user = await storage.getUserByEmail(email);
+      if (!user) {
+        // Don't reveal if email exists or not for security
+        return res.json({ success: true, message: "If an account exists with that email, a reset link has been sent." });
+      }
+
+      // Only allow password reset for manual auth users
+      if (user.authProvider !== 'manual') {
+        return res.status(400).json({ error: "Password reset is only available for email accounts. Please use your OAuth provider to sign in." });
+      }
+
+      // Generate reset token
+      const resetToken = crypto.randomBytes(32).toString('hex');
+      const resetTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+      // Save reset token to database
+      await storage.setResetToken(user.id, resetToken, resetTokenExpiry);
+
+      // Send reset email
+      await emailService.sendPasswordResetEmail(email, resetToken, user.firstName || undefined);
+
+      res.json({ success: true, message: "If an account exists with that email, a reset link has been sent." });
+
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid email format" });
+      }
+      console.error("Forgot password error:", error);
+      res.status(500).json({ error: "Failed to process password reset request" });
+    }
+  });
+
+  // Reset password route
+  app.post("/api/auth/reset-password", async (req, res) => {
+    try {
+      const { token, password } = resetPasswordSchema.parse(req.body);
+
+      // Find user by reset token
+      const user = await storage.getUserByResetToken(token);
+      if (!user) {
+        return res.status(400).json({ error: "Invalid or expired reset token" });
+      }
+
+      // Check if token is expired
+      if (!user.resetTokenExpiry || new Date() > user.resetTokenExpiry) {
+        return res.status(400).json({ error: "Reset token has expired" });
+      }
+
+      // Hash new password
+      const passwordHash = await bcrypt.hash(password, 12);
+
+      // Update password and clear reset token
+      await storage.updateUserPassword(user.id, passwordHash);
+
+      res.json({ success: true, message: "Password has been reset successfully" });
+
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid input", details: error.errors });
+      }
+      console.error("Reset password error:", error);
+      res.status(500).json({ error: "Failed to reset password" });
+    }
+  });
+
+  // Verify reset token route
+  app.get("/api/auth/verify-reset-token/:token", async (req, res) => {
+    try {
+      const { token } = req.params;
+
+      const user = await storage.getUserByResetToken(token);
+      if (!user) {
+        return res.status(400).json({ error: "Invalid reset token" });
+      }
+
+      // Check if token is expired
+      if (!user.resetTokenExpiry || new Date() > user.resetTokenExpiry) {
+        return res.status(400).json({ error: "Reset token has expired" });
+      }
+
+      res.json({ valid: true, email: user.email });
+
+    } catch (error) {
+      console.error("Verify reset token error:", error);
+      res.status(500).json({ error: "Failed to verify reset token" });
+    }
   });
 }
