@@ -7,13 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { insertDocumentSchema, type InsertDocument } from "@shared/schema";
 import { z } from "zod";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+
 import {
   Form,
   FormControl,
@@ -44,10 +38,10 @@ type DocumentFormData = z.infer<typeof documentFormSchema>;
 
 interface DocumentUploadFormProps {
   children?: React.ReactNode;
+  onSuccess?: () => void;
 }
 
-export default function DocumentUploadForm({ children }: DocumentUploadFormProps) {
-  const [open, setOpen] = useState(false);
+export default function DocumentUploadForm({ children, onSuccess }: DocumentUploadFormProps) {
   const [uploadedFileUrl, setUploadedFileUrl] = useState<string>("");
   const [uploadedFileName, setUploadedFileName] = useState<string>("");
   const [uploadedFileSize, setUploadedFileSize] = useState<number>(0);
@@ -109,12 +103,12 @@ export default function DocumentUploadForm({ children }: DocumentUploadFormProps
         title: "Success",
         description: "Document saved successfully",
       });
-      setOpen(false);
       setUploadedFileUrl("");
       setUploadedFileName("");
       setUploadedFileSize(0);
       setUploadedFileType("");
       form.reset();
+      onSuccess?.();
     },
     onError: (error) => {
       if (isUnauthorizedError(error)) {
@@ -212,21 +206,8 @@ export default function DocumentUploadForm({ children }: DocumentUploadFormProps
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {children || (
-          <Button className="bg-blue-600 hover:bg-blue-700">
-            <Upload className="h-4 w-4 mr-2" />
-            Upload Document
-          </Button>
-        )}
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px]">
-        <DialogHeader>
-          <DialogTitle>Upload Document</DialogTitle>
-        </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Upload File</label>
@@ -354,16 +335,11 @@ export default function DocumentUploadForm({ children }: DocumentUploadFormProps
             />
 
             <div className="flex justify-end space-x-2 pt-4">
-              <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={saveDocumentMutation.isPending}>
+              <Button type="submit" disabled={saveDocumentMutation.isPending} className="w-full">
                 {saveDocumentMutation.isPending ? "Saving..." : "Save Document"}
               </Button>
             </div>
           </form>
         </Form>
-      </DialogContent>
-    </Dialog>
   );
 }
