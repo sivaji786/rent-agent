@@ -45,7 +45,7 @@ interface ApplicationTourProps {
 const tourSteps: TourStep[] = [
   {
     id: "welcome",
-    title: "Welcome to PropertyFlow",
+    title: "Welcome to Prolits",
     description: "Your comprehensive property management platform. Let's take a quick tour to get you started with managing your properties, tenants, and finances efficiently.",
     icon: Home,
   },
@@ -133,7 +133,7 @@ export default function ApplicationTour({ isOpen, onClose, startFromStep = 0 }: 
 
   useEffect(() => {
     // Check if this is the user's first visit
-    const hasVisited = localStorage.getItem('propertyflow-tour-completed');
+    const hasVisited = localStorage.getItem('prolits-tour-completed');
     if (!hasVisited && isOpen) {
       setIsFirstVisit(true);
     }
@@ -156,14 +156,14 @@ export default function ApplicationTour({ isOpen, onClose, startFromStep = 0 }: 
   };
 
   const handleComplete = () => {
-    localStorage.setItem('propertyflow-tour-completed', 'true');
-    localStorage.setItem('propertyflow-tour-completed-date', new Date().toISOString());
+    localStorage.setItem('prolits-tour-completed', 'true');
+    localStorage.setItem('prolits-tour-completed-date', new Date().toISOString());
     onClose();
   };
 
   const handleSkip = () => {
-    localStorage.setItem('propertyflow-tour-completed', 'true');
-    localStorage.setItem('propertyflow-tour-skipped', 'true');
+    localStorage.setItem('prolits-tour-completed', 'true');
+    localStorage.setItem('prolits-tour-skipped', 'true');
     onClose();
   };
 

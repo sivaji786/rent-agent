@@ -13,7 +13,7 @@ export default function Landing() {
                 <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
               </svg>
             </div>
-            <span className="text-3xl font-bold text-gray-900">PropertyFlow</span>
+            <span className="text-3xl font-bold text-gray-900">Prolits</span>
           </div>
           <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
             Modern Property Management
@@ -26,7 +26,7 @@ export default function Landing() {
           <div className="max-w-md mx-auto mb-8">
             <AuthSection 
               title="Get Started Today"
-              description="Choose your preferred sign-in method to access PropertyFlow"
+              description="Choose your preferred sign-in method to access Prolits"
             />
           </div>
           

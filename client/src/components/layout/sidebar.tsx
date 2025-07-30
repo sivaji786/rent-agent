@@ -86,7 +86,7 @@ export default function Sidebar() {
           <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
             <Building className="h-4 w-4 text-white" />
           </div>
-          <span className="text-xl font-bold text-gray-900">PropertyFlow</span>
+          <span className="text-xl font-bold text-gray-900">Prolits</span>
         </div>
       </div>
 

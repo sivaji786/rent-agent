@@ -6,8 +6,8 @@ export function useTour() {
 
   useEffect(() => {
     // Check if user has completed the tour
-    const tourCompleted = localStorage.getItem('propertyflow-tour-completed');
-    const tourSkipped = localStorage.getItem('propertyflow-tour-skipped');
+    const tourCompleted = localStorage.getItem('prolits-tour-completed');
+    const tourSkipped = localStorage.getItem('prolits-tour-skipped');
     
     if (!tourCompleted && !tourSkipped) {
       // This is a first visit, show tour after a short delay
@@ -29,9 +29,9 @@ export function useTour() {
   };
 
   const resetTour = () => {
-    localStorage.removeItem('propertyflow-tour-completed');
-    localStorage.removeItem('propertyflow-tour-skipped');
-    localStorage.removeItem('propertyflow-tour-completed-date');
+    localStorage.removeItem('prolits-tour-completed');
+    localStorage.removeItem('prolits-tour-skipped');
+    localStorage.removeItem('prolits-tour-completed-date');
     setIsFirstVisit(true);
     setShowTour(true);
   };

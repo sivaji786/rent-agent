@@ -44,7 +44,7 @@ export function SignupForm({ onSuccess, onSwitchToLogin }: SignupFormProps) {
     onSuccess: () => {
       toast({
         title: "Account created successfully",
-        description: "You are now signed in to PropertyFlow",
+        description: "You are now signed in to Prolits",
       });
       onSuccess?.();
       // Refresh the page to update authentication state
@@ -79,7 +79,7 @@ export function SignupForm({ onSuccess, onSwitchToLogin }: SignupFormProps) {
           Create Account
         </CardTitle>
         <CardDescription>
-          Sign up for PropertyFlow with your email
+          Sign up for Prolits with your email
         </CardDescription>
       </CardHeader>
       <CardContent>

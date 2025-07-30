@@ -66,7 +66,7 @@ export function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
           Sign In
         </CardTitle>
         <CardDescription>
-          Sign in to your PropertyFlow account
+          Sign in to your Prolits account
         </CardDescription>
       </CardHeader>
       <CardContent>

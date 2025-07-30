@@ -18,7 +18,7 @@ interface AuthSectionProps {
 }
 
 export function AuthSection({ 
-  title = "Sign in to PropertyFlow",
+  title = "Sign in to Prolits",
   description = "Choose your preferred sign-in method",
   showReplit = true,
   showGoogle = true,

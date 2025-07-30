@@ -1,8 +1,8 @@
-# PropertyFlow - Property Management System
+# Prolits - Property Management System
 
 ## Overview
 
-PropertyFlow is a modern, full-stack property management application built with React, Express, and PostgreSQL. The system provides comprehensive property management capabilities including property oversight, tenant management, financial tracking, maintenance requests, and communication tools.
+Prolits is a modern, full-stack property management application built with React, Express, and PostgreSQL. The system provides comprehensive property management capabilities including property oversight, tenant management, financial tracking, maintenance requests, and communication tools.
 
 ## User Preferences
 
