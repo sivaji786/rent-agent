@@ -195,11 +195,15 @@ export default function MaintenanceForm({ children }: MaintenanceFormProps) {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {properties?.map((property: any) => (
+                        {properties && Array.isArray(properties) ? properties.map((property: any) => (
                           <SelectItem key={property.id} value={property.id}>
                             {property.name}
                           </SelectItem>
-                        ))}
+                        )) : (
+                          <SelectItem value="no-properties" disabled>
+                            No properties available
+                          </SelectItem>
+                        )}
                       </SelectContent>
                     </Select>
                     <FormMessage />
