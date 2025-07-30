@@ -7,7 +7,7 @@ import { isUnauthorizedError } from "@/lib/authUtils";
 import PropertyForm from "@/components/forms/property-form";
 import TenantForm from "@/components/forms/tenant-form";
 import { Button } from "@/components/ui/button";
-import { Upload } from "lucide-react";
+import { Upload, Building, User } from "lucide-react";
 
 interface QuickActionModalProps {
   isOpen: boolean;
@@ -89,7 +89,7 @@ export default function QuickActionModal({ isOpen, onClose, type }: QuickActionM
       case 'tenant':
         return (
           <div className="text-center py-8">
-            <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <User className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">Add New Tenant</h3>
             <p className="text-gray-600 mb-4">
               Tenant invitation functionality would be implemented here.
@@ -99,9 +99,17 @@ export default function QuickActionModal({ isOpen, onClose, type }: QuickActionM
         );
       
       case 'document':
-        // Close this modal and let the proper DocumentUploadForm handle uploads
-        onClose();
-        return null;
+        // Close this modal to prevent conflicts
+        setTimeout(() => onClose(), 0);
+        return (
+          <div className="text-center py-8">
+            <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Upload Document</h3>
+            <p className="text-gray-600 mb-4">
+              Opening document upload form...
+            </p>
+          </div>
+        );
       
       default:
         return <div>Unknown action type</div>;
