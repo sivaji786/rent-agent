@@ -88,23 +88,20 @@ export default function QuickActionModal({ isOpen, onClose, type }: QuickActionM
       
       case 'tenant':
         return (
-          <TenantForm
-            onSubmit={(data) => createTenantMutation.mutate(data)}
-            isLoading={createTenantMutation.isPending}
-          />
-        );
-      
-      case 'document':
-        return (
           <div className="text-center py-8">
-            <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Document Upload</h3>
+            <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Add New Tenant</h3>
             <p className="text-gray-600 mb-4">
-              Document upload functionality would be implemented here with file storage integration.
+              Tenant invitation functionality would be implemented here.
             </p>
             <Button onClick={onClose}>Close</Button>
           </div>
         );
+      
+      case 'document':
+        // Close this modal and let the proper DocumentUploadForm handle uploads
+        onClose();
+        return null;
       
       default:
         return <div>Unknown action type</div>;
