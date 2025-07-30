@@ -141,6 +141,10 @@ The application follows modern full-stack patterns with clear separation of conc
   - Integrated LogoutButton with proper session termination
   - Updated landing page with improved call-to-action buttons
   - User profile displays name, email, and profile image from Replit Auth
+  - Added Google and Microsoft OAuth authentication options
+  - Created AuthSection component with multiple sign-in providers
+  - Implemented server-side OAuth strategies for Google and Microsoft
+  - Authentication system gracefully handles missing OAuth credentials
   
 - **Modal-Based Dashboard Interface**: Refactored quick actions to use modal system
   - Created separate modal components (PropertyModal, TenantInviteModal, DocumentUploadModal)
