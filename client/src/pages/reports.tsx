@@ -1,16 +1,84 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { isUnauthorizedError } from "@/lib/authUtils";
 import Sidebar from "@/components/layout/sidebar";
 import TopBar from "@/components/layout/topbar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { isUnauthorizedError } from "@/lib/authUtils";
-import { BarChart3, FileText, Download, TrendingUp, DollarSign, Home, Users, Calendar } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { BarChart3, FileText, Download, TrendingUp, DollarSign, Home, Users, Calendar, Loader2 } from "lucide-react";
 
 export default function Reports() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
+  const [selectedReport, setSelectedReport] = useState<any>(null);
+  const [reportData, setReportData] = useState<any>(null);
+
+  // Fetch dashboard stats for reports
+  const { data: dashboardStats } = useQuery({
+    queryKey: ["/api/dashboard/stats"],
+    retry: false,
+  });
+
+  // Fetch properties for reports
+  const { data: properties } = useQuery({
+    queryKey: ["/api/properties"],
+    retry: false,
+  });
+
+  // Fetch maintenance requests for reports
+  const { data: maintenanceRequests } = useQuery({
+    queryKey: ["/api/maintenance-requests"],
+    retry: false,
+  });
+
+  // Fetch payments for reports
+  const { data: payments } = useQuery({
+    queryKey: ["/api/payments"],
+    retry: false,
+  });
+
+  // Fetch tenants for reports
+  const { data: tenants } = useQuery({
+    queryKey: ["/api/tenants"],
+    retry: false,
+  });
+
+  // Generate report data
+  const generateReportMutation = useMutation({
+    mutationFn: async (reportType: string) => {
+      const response = await apiRequest("POST", "/api/reports/generate", { reportType });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      setReportData(data);
+      toast({
+        title: "Success",
+        description: "Report generated successfully",
+      });
+    },
+    onError: (error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: "Failed to generate report",
+        variant: "destructive",
+      });
+    },
+  });
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -33,6 +101,156 @@ export default function Reports() {
       </div>
     );
   }
+
+  // Helper functions for export
+  const exportToCSV = (data: any[], filename: string) => {
+    if (!data || data.length === 0) {
+      toast({
+        title: "No Data",
+        description: "No data available to export",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const headers = Object.keys(data[0]);
+    const csvContent = [
+      headers.join(','),
+      ...data.map(row => headers.map(header => `"${row[header] || ''}"`).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `${filename}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const exportToPDF = async (reportType: string, data: any) => {
+    try {
+      const response = await apiRequest("POST", "/api/reports/export-pdf", { 
+        reportType, 
+        data 
+      });
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${reportType.replace(/\s+/g, '_')}_report.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to export PDF",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleViewReport = (reportName: string, reportType: string) => {
+    setSelectedReport({ name: reportName, type: reportType });
+    
+    // Generate report data based on type
+    let data: any[] = [];
+    
+    switch (reportName) {
+      case "Revenue Summary":
+        data = payments ? payments.map((p: any) => ({
+          Date: new Date(p.paymentDate).toLocaleDateString(),
+          Amount: `$${p.amount}`,
+          Method: p.paymentMethod || 'N/A',
+          Notes: p.notes || ''
+        })) : [];
+        break;
+      case "Occupancy Report":
+        data = properties ? properties.map((p: any) => ({
+          Property: p.name,
+          Address: p.address,
+          'Total Units': p.totalUnits,
+          Type: p.propertyType,
+          Status: 'Active'
+        })) : [];
+        break;
+      case "Tenant Directory":
+        data = tenants ? tenants.map((t: any) => ({
+          Name: `${t.firstName || ''} ${t.lastName || ''}`.trim(),
+          Email: t.email || '',
+          Role: t.role,
+          'Created At': new Date(t.createdAt).toLocaleDateString()
+        })) : [];
+        break;
+      case "Maintenance Summary":
+        data = maintenanceRequests ? maintenanceRequests.map((m: any) => ({
+          Title: m.title,
+          Priority: m.priority,
+          Status: m.status,
+          'Created At': new Date(m.createdAt).toLocaleDateString(),
+          'Estimated Cost': m.estimatedCost ? `$${m.estimatedCost}` : 'N/A'
+        })) : [];
+        break;
+      default:
+        data = [];
+    }
+    
+    setReportData(data);
+  };
+
+  const handleExportReport = (reportName: string, format: 'csv' | 'pdf' = 'csv') => {
+    // Generate report data based on type
+    let data: any[] = [];
+    
+    switch (reportName) {
+      case "Revenue Summary":
+        data = payments ? payments.map((p: any) => ({
+          Date: new Date(p.paymentDate).toLocaleDateString(),
+          Amount: `$${p.amount}`,
+          Method: p.paymentMethod || 'N/A',
+          Notes: p.notes || ''
+        })) : [];
+        break;
+      case "Occupancy Report":
+        data = properties ? properties.map((p: any) => ({
+          Property: p.name,
+          Address: p.address,
+          'Total Units': p.totalUnits,
+          Type: p.propertyType,
+          Status: 'Active'
+        })) : [];
+        break;
+      case "Tenant Directory":
+        data = tenants ? tenants.map((t: any) => ({
+          Name: `${t.firstName || ''} ${t.lastName || ''}`.trim(),
+          Email: t.email || '',
+          Role: t.role,
+          'Created At': new Date(t.createdAt).toLocaleDateString()
+        })) : [];
+        break;
+      case "Maintenance Summary":
+        data = maintenanceRequests ? maintenanceRequests.map((m: any) => ({
+          Title: m.title,
+          Priority: m.priority,
+          Status: m.status,
+          'Created At': new Date(m.createdAt).toLocaleDateString(),
+          'Estimated Cost': m.estimatedCost ? `$${m.estimatedCost}` : 'N/A'
+        })) : [];
+        break;
+      default:
+        data = [];
+    }
+    
+    if (format === 'csv') {
+      exportToCSV(data, reportName);
+    } else {
+      exportToPDF(reportName, data);
+    }
+  };
 
   const reportCategories = [
     {
@@ -178,11 +396,60 @@ export default function Reports() {
                           <p className="text-sm text-gray-600 mt-1">{report.description}</p>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <Button size="sm" variant="outline">
-                            <BarChart3 className="h-4 w-4 mr-1" />
-                            View
-                          </Button>
-                          <Button size="sm" variant="outline">
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                onClick={() => handleViewReport(report.name, category.title)}
+                              >
+                                <BarChart3 className="h-4 w-4 mr-1" />
+                                View
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                              <DialogHeader>
+                                <DialogTitle>{selectedReport?.name || report.name}</DialogTitle>
+                              </DialogHeader>
+                              <div className="mt-4">
+                                {reportData && reportData.length > 0 ? (
+                                  <div className="overflow-x-auto">
+                                    <table className="min-w-full border-collapse border border-gray-300">
+                                      <thead>
+                                        <tr className="bg-gray-50">
+                                          {Object.keys(reportData[0]).map((header) => (
+                                            <th key={header} className="border border-gray-300 px-4 py-2 text-left font-medium">
+                                              {header}
+                                            </th>
+                                          ))}
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        {reportData.map((row: any, index: number) => (
+                                          <tr key={index} className="hover:bg-gray-50">
+                                            {Object.values(row).map((value: any, cellIndex: number) => (
+                                              <td key={cellIndex} className="border border-gray-300 px-4 py-2">
+                                                {value}
+                                              </td>
+                                            ))}
+                                          </tr>
+                                        ))}
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                ) : (
+                                  <div className="text-center py-8 text-gray-500">
+                                    No data available for this report
+                                  </div>
+                                )}
+                              </div>
+                            </DialogContent>
+                          </Dialog>
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => handleExportReport(report.name, 'csv')}
+                          >
                             <Download className="h-4 w-4 mr-1" />
                             Export
                           </Button>
@@ -225,7 +492,28 @@ export default function Reports() {
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <Button size="sm" variant="outline">
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => {
+                          // Simulate downloading a pre-generated report
+                          const reportContent = `Report: ${report.name}\nGenerated: ${report.date}\nSize: ${report.size}\n\nThis is a sample report file.`;
+                          const blob = new Blob([reportContent], { type: 'text/plain' });
+                          const url = URL.createObjectURL(blob);
+                          const link = document.createElement('a');
+                          link.href = url;
+                          link.download = `${report.name.replace(/\s+/g, '_')}.txt`;
+                          document.body.appendChild(link);
+                          link.click();
+                          document.body.removeChild(link);
+                          URL.revokeObjectURL(url);
+                          
+                          toast({
+                            title: "Success",
+                            description: "Report downloaded successfully",
+                          });
+                        }}
+                      >
                         <Download className="h-4 w-4 mr-1" />
                         Download
                       </Button>
