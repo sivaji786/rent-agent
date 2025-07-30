@@ -34,7 +34,11 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus } from "lucide-react";
 
-const maintenanceFormSchema = insertMaintenanceRequestSchema.extend({
+const maintenanceFormSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  description: z.string().min(1, "Description is required"),
+  priority: z.enum(["low", "medium", "high", "urgent"]).default("medium"),
+  unitId: z.string().min(1, "Property selection is required"),
   estimatedCost: z.string().optional(),
 });
 
@@ -70,9 +74,13 @@ export default function MaintenanceForm({ children }: MaintenanceFormProps) {
   const createMaintenanceMutation = useMutation({
     mutationFn: async (data: MaintenanceFormData) => {
       const submitData = {
-        ...data,
+        title: data.title,
+        description: data.description,
+        priority: data.priority || "medium",
+        unitId: data.unitId,
         estimatedCost: data.estimatedCost ? parseFloat(data.estimatedCost).toString() : undefined,
       };
+      console.log("Submitting data:", submitData);
       const response = await apiRequest("POST", "/api/maintenance-requests", submitData);
       return response.json();
     },
@@ -106,6 +114,8 @@ export default function MaintenanceForm({ children }: MaintenanceFormProps) {
   });
 
   const onSubmit = (data: MaintenanceFormData) => {
+    console.log("Form data:", data);
+    console.log("Form errors:", form.formState.errors);
     createMaintenanceMutation.mutate(data);
   };
 

@@ -284,10 +284,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/maintenance-requests", isAuthenticated, async (req: any, res) => {
     try {
-      const requestData = insertMaintenanceRequestSchema.parse(req.body);
+      const userId = req.user.claims.sub;
+      const requestData = {
+        ...req.body,
+        tenantId: userId, // Set the current user as the tenant making the request
+      };
+      console.log("Creating maintenance request with data:", requestData);
       const request = await storage.createMaintenanceRequest(requestData);
       res.status(201).json(request);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error creating maintenance request:", error);
       res.status(500).json({ message: "Failed to create maintenance request" });
     }
