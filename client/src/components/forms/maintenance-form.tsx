@@ -53,9 +53,9 @@ export default function MaintenanceForm({ children }: MaintenanceFormProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fetch properties to get units
-  const { data: properties } = useQuery({
-    queryKey: ["/api/properties"],
+  // Fetch units for maintenance requests
+  const { data: units } = useQuery({
+    queryKey: ["/api/units"],
     retry: false,
   });
 
@@ -80,7 +80,6 @@ export default function MaintenanceForm({ children }: MaintenanceFormProps) {
         unitId: data.unitId,
         estimatedCost: data.estimatedCost ? parseFloat(data.estimatedCost).toString() : undefined,
       };
-      console.log("Submitting data:", submitData);
       const response = await apiRequest("POST", "/api/maintenance-requests", submitData);
       return response.json();
     },
@@ -114,8 +113,6 @@ export default function MaintenanceForm({ children }: MaintenanceFormProps) {
   });
 
   const onSubmit = (data: MaintenanceFormData) => {
-    console.log("Form data:", data);
-    console.log("Form errors:", form.formState.errors);
     createMaintenanceMutation.mutate(data);
   };
 
@@ -197,21 +194,21 @@ export default function MaintenanceForm({ children }: MaintenanceFormProps) {
                 name="unitId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Property/Unit</FormLabel>
+                    <FormLabel>Unit</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select property" />
+                          <SelectValue placeholder="Select unit" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {properties && Array.isArray(properties) ? properties.map((property: any) => (
-                          <SelectItem key={property.id} value={property.id}>
-                            {property.name}
+                        {units && Array.isArray(units) ? units.map((unit: any) => (
+                          <SelectItem key={unit.id} value={unit.id}>
+                            {unit.property?.name || 'Property'} - Unit {unit.unitNumber}
                           </SelectItem>
                         )) : (
-                          <SelectItem value="no-properties" disabled>
-                            No properties available
+                          <SelectItem value="no-units" disabled>
+                            No units available
                           </SelectItem>
                         )}
                       </SelectContent>

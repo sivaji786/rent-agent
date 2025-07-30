@@ -289,7 +289,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...req.body,
         tenantId: userId, // Set the current user as the tenant making the request
       };
-      console.log("Creating maintenance request with data:", requestData);
+
       const request = await storage.createMaintenanceRequest(requestData);
       res.status(201).json(request);
     } catch (error: any) {

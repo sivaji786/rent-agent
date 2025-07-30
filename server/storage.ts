@@ -169,7 +169,12 @@ export class DatabaseStorage implements IStorage {
 
   // Unit operations
   async getUnits(): Promise<Unit[]> {
-    return await db.select().from(units).orderBy(desc(units.createdAt));
+    return await db.query.units.findMany({
+      with: {
+        property: true,
+      },
+      orderBy: desc(units.createdAt),
+    });
   }
 
   async getUnit(id: string): Promise<Unit | undefined> {
