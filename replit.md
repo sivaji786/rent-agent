@@ -150,6 +150,18 @@ The application follows modern full-stack patterns with clear separation of conc
   - Implemented bcrypt password hashing and local authentication strategy
   - Enhanced users table with passwordHash and authProvider fields
   
+- **Password Reset System**: Complete forgot password functionality with secure token-based email reset
+  - Added resetToken and resetTokenExpiry fields to users database schema
+  - Created EmailService with nodemailer for sending password reset emails
+  - Implemented secure 24-hour token generation and validation system
+  - Built ForgotPasswordForm component with email input and confirmation states
+  - Created ResetPasswordForm component with token verification and password entry
+  - Added forgot password link integration to login form
+  - Implemented three API endpoints: forgot-password, reset-password, and verify-reset-token
+  - Added password reset route to application routing system
+  - Development mode logs reset emails to console when SMTP not configured
+  - Security features: tokens expire after 24 hours, only available for manual auth accounts
+  
 - **Modal-Based Dashboard Interface**: Refactored quick actions to use modal system
   - Created separate modal components (PropertyModal, TenantInviteModal, DocumentUploadModal)
   - Replaced embedded forms with clean action buttons
