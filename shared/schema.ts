@@ -47,12 +47,14 @@ export const messageStatusEnum = pgEnum("message_status", ["sent", "delivered", 
 // Users table
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  email: varchar("email").unique(),
+  email: varchar("email").unique().notNull(),
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
   role: userRoleEnum("role").notNull().default("tenant"),
   phone: varchar("phone"),
+  passwordHash: varchar("password_hash"), // For manual signups
+  authProvider: varchar("auth_provider").default("manual"), // 'manual', 'replit', 'google', 'microsoft'
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

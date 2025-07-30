@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { setupGoogleAuth } from "./googleAuth";
 import { setupMicrosoftAuth } from "./microsoftAuth";
+import { setupLocalAuth } from "./localAuth";
 import { ObjectStorageService } from "./objectStorage";
 import { 
   insertPropertySchema, 
@@ -21,6 +22,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   await setupAuth(app);
   await setupGoogleAuth(app);
   await setupMicrosoftAuth(app);
+  await setupLocalAuth(app);
 
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {

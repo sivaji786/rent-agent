@@ -145,6 +145,10 @@ The application follows modern full-stack patterns with clear separation of conc
   - Created AuthSection component with multiple sign-in providers
   - Implemented server-side OAuth strategies for Google and Microsoft
   - Authentication system gracefully handles missing OAuth credentials
+  - Added manual email/password signup and login functionality
+  - Created SignupForm and LoginForm components with validation
+  - Implemented bcrypt password hashing and local authentication strategy
+  - Enhanced users table with passwordHash and authProvider fields
   
 - **Modal-Based Dashboard Interface**: Refactored quick actions to use modal system
   - Created separate modal components (PropertyModal, TenantInviteModal, DocumentUploadModal)
