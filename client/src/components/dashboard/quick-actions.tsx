@@ -1,8 +1,8 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import DocumentUploadForm from "@/components/forms/document-upload-form";
 import PropertyForm from "@/components/forms/property-form";
+import TenantInviteForm from "@/components/forms/tenant-invite-form";
 import { Plus, UserPlus, Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -45,13 +45,6 @@ export default function QuickActions() {
     },
   });
 
-  const handleTenantAction = () => {
-    toast({
-      title: "Info",
-      description: "Tenant invitation functionality would be implemented here",
-    });
-  };
-
   const actions = [
     {
       id: 'property',
@@ -70,7 +63,7 @@ export default function QuickActions() {
       title: 'Add New Tenant',
       icon: UserPlus,
       color: 'bg-green-600 hover:bg-green-700',
-      action: handleTenantAction,
+      component: <TenantInviteForm />,
     },
     {
       id: 'document',
@@ -83,31 +76,31 @@ export default function QuickActions() {
 
   return (
     <Card>
-        <CardHeader>
-          <CardTitle className="text-lg font-semibold text-gray-900">
-            Quick Actions
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {actions.map((action) => (
-              action.component ? (
-                <div key={action.id}>
-                  {action.component}
-                </div>
-              ) : (
-                <Button
-                  key={action.id}
-                  onClick={action.action}
-                  className={`w-full flex items-center justify-center px-4 py-3 text-white rounded-lg transition-colors ${action.color}`}
-                >
-                  <action.icon className="h-4 w-4 mr-2" />
-                  {action.title}
-                </Button>
-              )
-            ))}
-          </div>
-        </CardContent>
+      <CardHeader>
+        <CardTitle className="text-lg font-semibold text-gray-900">
+          Quick Actions
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-3">
+          {actions.map((action) => (
+            action.component ? (
+              <div key={action.id}>
+                {action.component}
+              </div>
+            ) : (
+              <Button
+                key={action.id}
+                onClick={action.action}
+                className={`w-full flex items-center justify-center px-4 py-3 text-white rounded-lg transition-colors ${action.color}`}
+              >
+                <action.icon className="h-4 w-4 mr-2" />
+                {action.title}
+              </Button>
+            )
+          ))}
+        </div>
+      </CardContent>
     </Card>
   );
 }

@@ -174,6 +174,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Tenant invitation endpoints
+  app.post("/api/tenant-invitations", isAuthenticated, async (req, res) => {
+    try {
+      const invitation = {
+        id: crypto.randomUUID(),
+        email: req.body.email,
+        firstName: req.body.firstName,
+        lastName: req.body.lastName,
+        phone: req.body.phone,
+        propertyId: req.body.propertyId,
+        unitId: req.body.unitId,
+        moveInDate: req.body.moveInDate ? new Date(req.body.moveInDate) : null,
+        status: "pending" as const,
+        invitedBy: req.user.claims.sub,
+        invitedAt: new Date(),
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+      };
+
+      const savedInvitation = await storage.createTenantInvitation(invitation);
+      
+      // In a real app, you would send an email here
+      console.log(`Tenant invitation sent to ${invitation.email}`);
+      
+      res.json(savedInvitation);
+    } catch (error) {
+      console.error("Error creating tenant invitation:", error);
+      res.status(500).json({ message: "Failed to create tenant invitation" });
+    }
+  });
+
+  app.get("/api/tenant-invitations", isAuthenticated, async (req, res) => {
+    try {
+      const invitations = await storage.getTenantInvitations();
+      res.json(invitations);
+    } catch (error) {
+      console.error("Error fetching tenant invitations:", error);
+      res.status(500).json({ message: "Failed to fetch tenant invitations" });
+    }
+  });
+
   // Tenant routes (users with tenant role)
   app.get("/api/tenants", isAuthenticated, async (req: any, res) => {
     try {

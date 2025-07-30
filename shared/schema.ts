@@ -72,6 +72,22 @@ export const properties = pgTable("properties", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Tenant invitations table
+export const tenantInvitations = pgTable("tenant_invitations", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  email: varchar("email").notNull(),
+  firstName: varchar("first_name").notNull(),
+  lastName: varchar("last_name").notNull(),
+  phone: varchar("phone"),
+  propertyId: varchar("property_id").references(() => properties.id),
+  unitId: varchar("unit_id").references(() => units.id),
+  moveInDate: timestamp("move_in_date"),
+  status: varchar("status", { enum: ["pending", "accepted", "declined", "expired"] }).default("pending"),
+  invitedBy: varchar("invited_by").notNull(),
+  invitedAt: timestamp("invited_at").defaultNow(),
+  expiresAt: timestamp("expires_at").notNull(),
+});
+
 // Units table
 export const units = pgTable("units", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -327,3 +343,6 @@ export type Message = typeof messages.$inferSelect;
 export type InsertMessage = z.infer<typeof insertMessageSchema>;
 export type Document = typeof documents.$inferSelect;
 export type InsertDocument = z.infer<typeof insertDocumentSchema>;
+
+export type TenantInvitation = typeof tenantInvitations.$inferSelect;
+export type InsertTenantInvitation = typeof tenantInvitations.$inferInsert;

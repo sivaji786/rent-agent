@@ -7,6 +7,7 @@ import {
   maintenanceRequests,
   messages,
   documents,
+  tenantInvitations,
   type User,
   type UpsertUser,
   type Property,
@@ -23,6 +24,8 @@ import {
   type InsertMessage,
   type Document,
   type InsertDocument,
+  type TenantInvitation,
+  type InsertTenantInvitation,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, or, sql } from "drizzle-orm";
@@ -346,6 +349,25 @@ export class DatabaseStorage implements IStorage {
 
   async deleteDocument(id: string): Promise<void> {
     await db.delete(documents).where(eq(documents.id, id));
+  }
+
+  // Tenant invitation operations
+  async createTenantInvitation(invitation: InsertTenantInvitation): Promise<TenantInvitation> {
+    const [newInvitation] = await db
+      .insert(tenantInvitations)
+      .values(invitation)
+      .returning();
+    return newInvitation;
+  }
+
+  async getTenantInvitations(): Promise<TenantInvitation[]> {
+    const invitationList = await db.select().from(tenantInvitations);
+    return invitationList;
+  }
+
+  async getTenantInvitationById(id: string): Promise<TenantInvitation | undefined> {
+    const [invitation] = await db.select().from(tenantInvitations).where(eq(tenantInvitations.id, id));
+    return invitation;
   }
 
   // Dashboard statistics
