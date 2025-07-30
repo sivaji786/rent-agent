@@ -8,6 +8,7 @@ import TopBar from "@/components/layout/topbar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import TenantForm from "@/components/forms/tenant-form";
 import { User } from "@shared/schema";
 import { Users, Mail, Phone } from "lucide-react";
 
@@ -53,6 +54,7 @@ export default function Tenants() {
               <h1 className="text-2xl font-bold text-gray-900">Tenants</h1>
               <p className="text-sm text-gray-600 mt-1">Manage tenant information and relationships</p>
             </div>
+            <TenantForm />
           </div>
 
           {tenantsLoading ? (

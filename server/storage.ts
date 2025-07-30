@@ -31,6 +31,7 @@ export interface IStorage {
   // User operations
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
+  createUser(user: any): Promise<User>;
   getUsersByRole(role: string): Promise<User[]>;
 
   // Property operations
@@ -111,6 +112,11 @@ export class DatabaseStorage implements IStorage {
         },
       })
       .returning();
+    return user;
+  }
+
+  async createUser(userData: any): Promise<User> {
+    const [user] = await db.insert(users).values(userData).returning();
     return user;
   }
 

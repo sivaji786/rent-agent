@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import MessageForm from "@/components/forms/message-form";
 import { Message } from "@shared/schema";
 import { MessageCircle, Send, Inbox, Users } from "lucide-react";
 
@@ -63,10 +64,7 @@ export default function Communication() {
               <h1 className="text-2xl font-bold text-gray-900">Communication</h1>
               <p className="text-sm text-gray-600 mt-1">Manage messages and tenant communication</p>
             </div>
-            <Button className="bg-blue-600 hover:bg-blue-700">
-              <Send className="h-4 w-4 mr-2" />
-              New Message
-            </Button>
+            <MessageForm />
           </div>
 
           {/* Communication Overview */}
@@ -187,10 +185,12 @@ export default function Communication() {
                   <MessageCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                   <h3 className="text-lg font-medium text-gray-900 mb-2">No messages yet</h3>
                   <p className="text-gray-600">Messages between you and tenants will appear here</p>
-                  <Button className="mt-4" onClick={() => {}}>
-                    <Send className="h-4 w-4 mr-2" />
-                    Send First Message
-                  </Button>
+                  <MessageForm>
+                    <Button className="mt-4">
+                      <Send className="h-4 w-4 mr-2" />
+                      Send First Message
+                    </Button>
+                  </MessageForm>
                 </div>
               )}
             </CardContent>

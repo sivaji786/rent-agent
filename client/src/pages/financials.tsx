@@ -7,8 +7,10 @@ import Sidebar from "@/components/layout/sidebar";
 import TopBar from "@/components/layout/topbar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import PaymentForm from "@/components/forms/payment-form";
 import { Payment } from "@shared/schema";
-import { DollarSign, TrendingUp, Calendar, CreditCard } from "lucide-react";
+import { DollarSign, TrendingUp, Calendar, CreditCard, Plus } from "lucide-react";
 
 export default function Financials() {
   const { toast } = useToast();
@@ -56,6 +58,7 @@ export default function Financials() {
               <h1 className="text-2xl font-bold text-gray-900">Financials</h1>
               <p className="text-sm text-gray-600 mt-1">Track revenue, payments, and financial performance</p>
             </div>
+            <PaymentForm />
           </div>
 
           {/* Financial Overview Cards */}

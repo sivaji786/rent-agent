@@ -8,6 +8,7 @@ import TopBar from "@/components/layout/topbar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import DocumentUploadForm from "@/components/forms/document-upload-form";
 import { Document } from "@shared/schema";
 import { FileText, Upload, Download, Folder, Image, FileCheck } from "lucide-react";
 
@@ -101,10 +102,7 @@ export default function Documents() {
               <h1 className="text-2xl font-bold text-gray-900">Documents</h1>
               <p className="text-sm text-gray-600 mt-1">Manage property-related documents and files</p>
             </div>
-            <Button className="bg-blue-600 hover:bg-blue-700">
-              <Upload className="h-4 w-4 mr-2" />
-              Upload Document
-            </Button>
+            <DocumentUploadForm />
           </div>
 
           {/* Document Categories */}
@@ -194,10 +192,12 @@ export default function Documents() {
                   <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                   <h3 className="text-lg font-medium text-gray-900 mb-2">No documents found</h3>
                   <p className="text-gray-600 mb-4">Upload your first document to get started</p>
-                  <Button className="bg-blue-600 hover:bg-blue-700">
-                    <Upload className="h-4 w-4 mr-2" />
-                    Upload Document
-                  </Button>
+                  <DocumentUploadForm>
+                    <Button className="bg-blue-600 hover:bg-blue-700">
+                      <Upload className="h-4 w-4 mr-2" />
+                      Upload Document
+                    </Button>
+                  </DocumentUploadForm>
                 </div>
               )}
             </CardContent>

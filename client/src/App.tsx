@@ -14,6 +14,7 @@ import Maintenance from "@/pages/maintenance";
 import Communication from "@/pages/communication";
 import Reports from "@/pages/reports";
 import Documents from "@/pages/documents";
+import Settings from "@/pages/settings";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -32,6 +33,7 @@ function Router() {
           <Route path="/communication" component={Communication} />
           <Route path="/reports" component={Reports} />
           <Route path="/documents" component={Documents} />
+          <Route path="/settings" component={Settings} />
         </>
       )}
       <Route component={NotFound} />

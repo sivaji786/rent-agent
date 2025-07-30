@@ -8,7 +8,9 @@ import {
   insertLeaseSchema, 
   insertMaintenanceRequestSchema,
   insertMessageSchema,
-  insertPaymentSchema 
+  insertPaymentSchema,
+  insertUserSchema,
+  insertDocumentSchema
 } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -332,6 +334,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Tenants route
+  app.get("/api/tenants", isAuthenticated, async (req, res) => {
+    try {
+      const tenants = await storage.getUsersByRole("tenant");
+      res.json(tenants);
+    } catch (error) {
+      console.error("Error fetching tenants:", error);
+      res.status(500).json({ message: "Failed to fetch tenants" });
+    }
+  });
+
+  // User creation route for tenant management
+  app.post("/api/users", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (user?.role !== "admin" && user?.role !== "manager") {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+
+      const userData = insertUserSchema.parse(req.body);
+      const newUser = await storage.createUser(userData);
+      res.status(201).json(newUser);
+    } catch (error) {
+      console.error("Error creating user:", error);
+      res.status(500).json({ message: "Failed to create user" });
+    }
+  });
+
   // Document routes
   app.get("/api/documents", isAuthenticated, async (req, res) => {
     try {
@@ -340,6 +372,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching documents:", error);
       res.status(500).json({ message: "Failed to fetch documents" });
+    }
+  });
+
+  app.post("/api/documents", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (user?.role !== "admin" && user?.role !== "manager") {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+
+      const documentData = {
+        ...req.body,
+        uploadedBy: userId,
+      };
+      const document = await storage.createDocument(documentData);
+      res.status(201).json(document);
+    } catch (error) {
+      console.error("Error creating document:", error);
+      res.status(500).json({ message: "Failed to create document" });
     }
   });
 

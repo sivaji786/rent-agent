@@ -9,6 +9,7 @@ import TopBar from "@/components/layout/topbar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import MaintenanceForm from "@/components/forms/maintenance-form";
 import { MaintenanceRequest } from "@shared/schema";
 import { Wrench, Clock, CheckCircle, AlertTriangle, Plus } from "lucide-react";
 
@@ -116,10 +117,7 @@ export default function Maintenance() {
               <h1 className="text-2xl font-bold text-gray-900">Maintenance</h1>
               <p className="text-sm text-gray-600 mt-1">Manage maintenance requests and work orders</p>
             </div>
-            <Button className="bg-blue-600 hover:bg-blue-700">
-              <Plus className="h-4 w-4 mr-2" />
-              New Request
-            </Button>
+            <MaintenanceForm />
           </div>
 
           {/* Status Overview */}
