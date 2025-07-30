@@ -1,7 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { LoginButton } from "@/components/auth/login-button";
-import { SignupButton } from "@/components/auth/signup-button";
+import { AuthSection } from "@/components/auth/auth-section";
 
 export default function Landing() {
   return (
@@ -24,22 +23,23 @@ export default function Landing() {
             Streamline your property management with our comprehensive platform. 
             Manage properties, tenants, maintenance, and finances all in one place.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <LoginButton size="lg" className="px-8 py-4 text-lg" />
-            <SignupButton size="lg" className="px-8 py-4 text-lg" />
+          <div className="max-w-md mx-auto mb-8">
+            <AuthSection 
+              title="Get Started Today"
+              description="Choose your preferred sign-in method to access PropertyFlow"
+            />
           </div>
-          <div className="mt-4">
-            <Button 
-              variant="ghost" 
-              size="lg" 
-              className="px-8 py-4 text-lg text-gray-600 hover:text-gray-800"
-              onClick={() => {
-                document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' });
-              }}
-            >
-              Learn More
-            </Button>
-          </div>
+          
+          <Button 
+            variant="ghost" 
+            size="lg" 
+            className="px-8 py-4 text-lg text-gray-600 hover:text-gray-800"
+            onClick={() => {
+              document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' });
+            }}
+          >
+            Learn More
+          </Button>
         </div>
 
         <div className="grid md:grid-cols-3 gap-8 mb-16">
