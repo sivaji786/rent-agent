@@ -6,9 +6,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { insertDocumentSchema, type InsertDocument } from "@shared/schema";
-import { ObjectUploader } from "@/components/ObjectUploader";
 import { z } from "zod";
-import type { UploadResult } from "@uppy/core";
 import {
   Dialog,
   DialogContent,
@@ -54,6 +52,7 @@ export default function DocumentUploadForm({ children }: DocumentUploadFormProps
   const [uploadedFileName, setUploadedFileName] = useState<string>("");
   const [uploadedFileSize, setUploadedFileSize] = useState<number>(0);
   const [uploadedFileType, setUploadedFileType] = useState<string>("");
+  const [isUploading, setIsUploading] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -149,37 +148,66 @@ export default function DocumentUploadForm({ children }: DocumentUploadFormProps
     saveDocumentMutation.mutate(data);
   };
 
-  const handleGetUploadParameters = async () => {
-    const response = await apiRequest("POST", "/api/objects/upload");
-    const data = await response.json();
-    return {
-      method: "PUT" as const,
-      url: data.uploadURL,
-    };
-  };
 
-  const handleUploadComplete = (result: UploadResult<Record<string, unknown>, Record<string, unknown>>) => {
-    if (result.successful && result.successful.length > 0) {
-      const file = result.successful[0];
-      const fileUrl = file.uploadURL || "";
-      const fileName = file.name || "";
-      const fileSize = file.size || 0;
-      const fileType = file.type || "";
+
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file size (50MB limit)
+    if (file.size > 50 * 1024 * 1024) {
+      toast({
+        title: "Error",
+        description: "File size must be less than 50MB",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsUploading(true);
+    
+    try {
+      // Get upload URL
+      const response = await apiRequest("POST", "/api/objects/upload");
+      const data = await response.json();
       
-      setUploadedFileUrl(fileUrl);
-      setUploadedFileName(fileName);
-      setUploadedFileSize(fileSize);
-      setUploadedFileType(fileType);
+      // Upload file directly to storage
+      const uploadResponse = await fetch(data.uploadURL, {
+        method: "PUT",
+        body: file,
+        headers: {
+          'Content-Type': file.type,
+        },
+      });
+
+      if (!uploadResponse.ok) {
+        throw new Error('Upload failed');
+      }
+
+      // Set uploaded file info
+      setUploadedFileUrl(data.uploadURL.split('?')[0]); // Remove query parameters
+      setUploadedFileName(file.name);
+      setUploadedFileSize(file.size);
+      setUploadedFileType(file.type);
       
       // Auto-fill the document name if not already set
       if (!form.getValues("name")) {
-        form.setValue("name", fileName);
+        form.setValue("name", file.name);
       }
       
       toast({
         title: "Success",
         description: "File uploaded successfully. Please fill out the form and save.",
       });
+    } catch (error) {
+      console.error("Upload error:", error);
+      toast({
+        title: "Error",
+        description: "Failed to upload file. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -202,18 +230,29 @@ export default function DocumentUploadForm({ children }: DocumentUploadFormProps
             <div className="space-y-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Upload File</label>
-                <ObjectUploader
-                  maxNumberOfFiles={1}
-                  maxFileSize={50 * 1024 * 1024} // 50MB
-                  onGetUploadParameters={handleGetUploadParameters}
-                  onComplete={handleUploadComplete}
-                  buttonClassName="w-full"
-                >
-                  <div className="flex items-center justify-center space-x-2">
-                    <Upload className="h-4 w-4" />
-                    <span>Choose File to Upload</span>
-                  </div>
-                </ObjectUploader>
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                  <input
+                    type="file"
+                    id="file-upload"
+                    className="hidden"
+                    onChange={handleFileSelect}
+                    accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.txt"
+                  />
+                  <label
+                    htmlFor="file-upload"
+                    className={`cursor-pointer inline-flex items-center px-4 py-2 rounded-lg transition-colors ${
+                      isUploading 
+                        ? 'bg-gray-400 cursor-not-allowed' 
+                        : 'bg-blue-600 hover:bg-blue-700'
+                    } text-white`}
+                  >
+                    <Upload className="h-4 w-4 mr-2" />
+                    {isUploading ? 'Uploading...' : 'Choose File to Upload'}
+                  </label>
+                  <p className="text-sm text-gray-500 mt-2">
+                    Select PDF, Word documents, images, or text files (max 50MB)
+                  </p>
+                </div>
                 {uploadedFileName && (
                   <div className="text-sm text-green-600 bg-green-50 p-2 rounded">
                     ✓ Uploaded: {uploadedFileName} ({(uploadedFileSize / 1024).toFixed(1)} KB)
