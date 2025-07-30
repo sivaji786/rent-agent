@@ -79,9 +79,9 @@ export default function DocumentUploadForm({ children }: DocumentUploadFormProps
     resolver: zodResolver(documentFormSchema),
     defaultValues: {
       name: "",
-      propertyId: "",
-      unitId: "",
-      leaseId: "",
+      propertyId: "none",
+      unitId: "none",
+      leaseId: "none",
     },
   });
 
@@ -250,11 +250,63 @@ export default function DocumentUploadForm({ children }: DocumentUploadFormProps
                     </FormControl>
                     <SelectContent>
                       <SelectItem value="none">No Property</SelectItem>
-                      {properties?.map((property: any) => (
+                      {properties && Array.isArray(properties) ? properties.map((property: any) => (
                         <SelectItem key={property.id} value={property.id}>
                           {property.name}
                         </SelectItem>
-                      ))}
+                      )) : null}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="unitId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Associated Unit (Optional)</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select unit" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="none">No Unit</SelectItem>
+                      {units && Array.isArray(units) ? units.map((unit: any) => (
+                        <SelectItem key={unit.id} value={unit.id}>
+                          {unit.property?.name || 'Property'} - Unit {unit.unitNumber}
+                        </SelectItem>
+                      )) : null}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="leaseId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Associated Lease (Optional)</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select lease" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="none">No Lease</SelectItem>
+                      {leases && Array.isArray(leases) ? leases.map((lease: any) => (
+                        <SelectItem key={lease.id} value={lease.id}>
+                          Lease {lease.id.slice(-8)} - ${lease.monthlyRent}/month
+                        </SelectItem>
+                      )) : null}
                     </SelectContent>
                   </Select>
                   <FormMessage />

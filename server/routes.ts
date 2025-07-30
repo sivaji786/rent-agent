@@ -413,9 +413,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         fileUrl: req.body.fileUrl,
         fileType: req.body.fileType,
         fileSize: req.body.fileSize,
-        propertyId: req.body.propertyId,
-        unitId: req.body.unitId,
-        leaseId: req.body.leaseId,
+        propertyId: req.body.propertyId && req.body.propertyId !== "none" ? req.body.propertyId : null,
+        unitId: req.body.unitId && req.body.unitId !== "none" ? req.body.unitId : null,
+        leaseId: req.body.leaseId && req.body.leaseId !== "none" ? req.body.leaseId : null,
         uploadedBy: userId,
       };
       
