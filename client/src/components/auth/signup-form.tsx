@@ -31,14 +31,11 @@ export function SignupForm({ onSuccess, onSwitchToLogin }: SignupFormProps) {
         throw new Error("Passwords do not match");
       }
       
-      return await apiRequest("/api/auth/signup", {
-        method: "POST",
-        body: JSON.stringify({
-          firstName: data.firstName,
-          lastName: data.lastName,
-          email: data.email,
-          password: data.password,
-        }),
+      return await apiRequest("POST", "/api/auth/signup", {
+        firstName: data.firstName,
+        lastName: data.lastName,
+        email: data.email,
+        password: data.password,
       });
     },
     onSuccess: () => {

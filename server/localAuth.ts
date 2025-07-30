@@ -76,7 +76,6 @@ export async function setupLocalAuth(app: Express) {
 
       // Create user
       const user = await storage.upsertUser({
-        id: `manual_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         email,
         firstName,
         lastName,
