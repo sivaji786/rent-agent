@@ -64,28 +64,30 @@ export default function Documents() {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
+  const documentList = Array.isArray(documents) ? documents as Document[] : [];
+
   const documentCategories = [
     {
       name: "Lease Agreements",
-      count: documents?.filter((doc: Document) => doc.leaseId).length || 0,
+      count: documentList.filter((doc: Document) => doc.leaseId).length || 0,
       icon: FileCheck,
       color: "bg-blue-100 text-blue-600",
     },
     {
       name: "Property Documents",
-      count: documents?.filter((doc: Document) => doc.propertyId && !doc.unitId && !doc.leaseId).length || 0,
+      count: documentList.filter((doc: Document) => doc.propertyId && !doc.unitId && !doc.leaseId).length || 0,
       icon: Folder,
       color: "bg-green-100 text-green-600",
     },
     {
       name: "Unit Documents",
-      count: documents?.filter((doc: Document) => doc.unitId && !doc.leaseId).length || 0,
+      count: documentList.filter((doc: Document) => doc.unitId && !doc.leaseId).length || 0,
       icon: FileText,
       color: "bg-purple-100 text-purple-600",
     },
     {
       name: "General Files",
-      count: documents?.filter((doc: Document) => !doc.propertyId && !doc.unitId && !doc.leaseId).length || 0,
+      count: documentList.filter((doc: Document) => !doc.propertyId && !doc.unitId && !doc.leaseId).length || 0,
       icon: FileText,
       color: "bg-amber-100 text-amber-600",
     },
@@ -148,9 +150,9 @@ export default function Documents() {
                     </div>
                   ))}
                 </div>
-              ) : documents && documents.length > 0 ? (
+              ) : documentList && documentList.length > 0 ? (
                 <div className="space-y-4">
-                  {documents.map((document: Document) => {
+                  {documentList.map((document: Document) => {
                     const FileIcon = getFileIcon(document.fileType || '');
                     return (
                       <div
