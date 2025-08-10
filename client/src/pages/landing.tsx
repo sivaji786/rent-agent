@@ -1,6 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { AuthSection } from "@/components/auth/auth-section";
+import { Link } from "wouter";
 
 export default function Landing() {
   return (
@@ -23,11 +23,13 @@ export default function Landing() {
             Streamline your property management with our comprehensive platform. 
             Manage properties, tenants, maintenance, and finances all in one place.
           </p>
-          <div className="max-w-md mx-auto mb-8">
-            <AuthSection 
-              title="Get Started Today"
-              description="Choose your preferred sign-in method to access Prolits"
-            />
+          <div className="space-x-4 mb-8">
+            <Button size="lg" asChild>
+              <Link href="/auth">Get Started</Link>
+            </Button>
+            <Button variant="outline" size="lg" asChild>
+              <Link href="/auth">Sign In</Link>
+            </Button>
           </div>
           
           <Button 

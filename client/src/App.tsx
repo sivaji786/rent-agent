@@ -16,6 +16,7 @@ import Reports from "@/pages/reports";
 import Documents from "@/pages/documents";
 import Settings from "@/pages/settings";
 import ResetPassword from "@/pages/reset-password";
+import AuthPage from "@/pages/auth";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -25,6 +26,7 @@ function Router() {
       {isLoading || !isAuthenticated ? (
         <>
           <Route path="/" component={Landing} />
+          <Route path="/auth" component={AuthPage} />
           <Route path="/reset-password" component={ResetPassword} />
         </>
       ) : (
